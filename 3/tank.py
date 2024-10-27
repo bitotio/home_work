@@ -1,49 +1,203 @@
-from tank import Tank
+#  создание бота
+
+from hitbox import Hitbox
 from tkinter import *
+from random import randint
 
 
 
-KEY_W = 87
-KEY_S = 83
-KEY_A = 65
-KEY_D = 68
 
-FPS = 60
+class Tank:
+    __count = 0
+    #  1. добавим логическое поле
+    def __init__(self, canvas, x, y,model = 'Т-14 Армата', ammo = 100, speed = 10,
+                 file_up = '../img/tankT34_up.png',
+                 file_down = '../img/tankT34_down.png',
+                 file_left = '../img/tankT34_left.png',
+                 file_right = '../img/tankT34_right.png',
 
-def update():
-    player.update()
-    check_collision()
-    w.after(1000//FPS, update)
+                 bot = True):
+        self.__bot = bot
 
-def check_collision():
-        if player.intersects(enemy):
-            print('Танки столкнулись')
-            player.undo_move()
+        self.__skin_up = PhotoImage(file = file_up)
+        self.__skin_down = PhotoImage(file = file_down)
+        self.__skin_left = PhotoImage(file = file_left)
+        self.__skin_right = PhotoImage(file = file_right)
 
-def key_press(event):
-    if event.keycode == KEY_W:
-        player.forvard()
-    if event.keycode == KEY_S:
-        player.backward()
-    if event.keycode == KEY_A:
-        player.left()
-    if event.keycode == KEY_D:
-        player.right()
-    check_collision()
+        Tank.__count += 1
+        self.__hitbox = Hitbox(x, y, self.get_sise(), self.get_sise(), padding=-3)
+        self.__canvas = canvas
+        self.__model = model
+        self.__hp = 100
+        self.__xp = 0
+        self.__ammo = ammo
+        self.__fuel = 10000
+        self.__speed = speed
+        self.__x = x
+        self.__y = y
 
-
-
-w = Tk()
-w.title('Танки на минималках 2.0')
-canv = Canvas(w, width = 800, height = 600, bg = 'alice blue')
-canv.pack()
-player = Tank(canvas = canv, x = 100, y = 50, ammo = 100)
-
-enemy = Tank(canvas = canv, x = 300, y = 300, ammo = 100)
+        self.__vx = 0
+        self.__vy = 0
 
 
+        self.__dx = 0
+        self.__dy = 0
 
-w.bind('<KeyPress>', key_press)
 
-update()
-w.mainloop()
+        if self.__x < 0:
+            self.__x = 0
+        if self.__y < 0:
+            self.__y = 0
+
+        self.__create()
+        self.right()
+
+    def set_target(self, target):
+        self.__target = target
+
+    def __AL_goto_target(self):
+        if randint(1, 2) == 1:
+            if self.__target.get_x() < self.get_x():
+                self.left()
+            else:
+                self.right()
+        else:
+            if self.__target.get_y() < self.get_y():
+                self.forvard()
+            else:
+                self.backward()
+
+# 2 Мозги танка
+    def __AI(self):
+        if randint(1, 30) == 1:
+            if randint(0, 3) == 0:
+                self.__AL_goto_target()
+            else:
+                self.__AI_change_orientation()
+        # pass
+        # 5 вызывать смену движения будем в среднем каждые 30 кадров
+        if randint(1,30) == 1:
+            self.__AI_change_orientation()
+
+
+
+# 4 метод для выбора случайного направления
+    def __AI_change_orientation(self):
+        rand = randint(0, 3)
+        if rand == 0:
+            self.left()
+        if rand == 1:
+            self.right()
+        if rand == 2:
+            self.forvard()
+        if rand == 3:
+            self.backward()
+
+    def fire(self):
+        if self.__ammo > 0:
+            self.__ammo -= 1
+            print('стреляю')
+
+    def forvard(self):
+        self.__vx = 0
+        self.__vy = -1
+        self.__canvas.itemconfig(self.__id, image = self.__skin_up)
+
+    def backward(self):
+        self.__vx = 0
+        self.__vy = 1
+        self.__canvas.itemconfig(self.__id, image = self.__skin_down)
+
+    def left(self):
+        self.__vx = -1
+        self.__vy = 0
+        self.__canvas.itemconfig(self.__id, image = self.__skin_left)
+
+    def right(self):
+        self.__vx = 1
+        self.__vy = 0
+        self.__canvas.itemconfig(self.__id, image = self.__skin_right)
+
+
+    def update(self):
+        if self.__fuel > self.__speed:
+            # 3. Если танк является ботом включим мозги
+            if self.__bot:
+                self.__AI()
+
+            self.__dx = self.__vx * self.__speed
+            self.__dy = self.__vy * self.__speed
+            self.__x += self.__dx
+            self.__y += self.__dy
+
+            self.__fuel -=self.__speed
+            self.__update_hitbox()
+            self.__repaint()
+
+
+    def __undo_move(self):
+        if self.__dx > 0 and self.__dy > 0:
+            return
+        self.__x -= self.__dx
+        self.__y -= self.__dy
+        self.__update_hitbox()
+        self.__repaint()
+        self.__dx = 0
+        self.__dy = 0
+
+    def __create(self):
+        self.__id = self.__canvas.create_image(self.__x, self.__y, image = self.__skin_up, anchor ='nw')
+
+    def __repaint(self):
+        self.__canvas.moveto(self.__id, x = self.__x, y = self.__y)
+
+    def __update_hitbox(self):
+        self.__hitbox.moveto(self.__x, self.__y)
+
+    def inersects(self, other_tank):
+        value = self.__hitbox.intersects(other_tank.__hitbox)
+        if value:
+            self.__undo_move()
+            if self.__bot:
+                self.__AI_change_orientation()
+
+        return value
+
+
+
+    def get_x(self):
+        return self.__x
+    def get_y(self):
+        return self.__y
+
+    def get_ammo(self):
+        return self.__ammo
+
+    def get_model(self):
+        return self.__model
+
+    def get_hp(self):
+        return self.__hp
+
+    def get_xp(self):
+        return self.__xp
+
+    def get_fuel(self):
+        return self.__fuel
+
+    def get_speed(self):
+        return self.__speed
+
+    @staticmethod
+    def grt_quantity():
+        return Tank.__count
+
+
+    def get_sise(self):
+        return self.__skin_up.width()
+
+
+    def __str__(self):
+        return (f'координаты: x = {self.__x}, y = {self.__y}, модель: {self.__model}, '
+                f'здоровье: {self.__hp}, опыт: {self.__xp}, боеприпасы: {self.__ammo}')
+
