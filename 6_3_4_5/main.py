@@ -1,5 +1,3 @@
-# Позиционирование камеры на танке игрока
-
 from tank import Tank
 
 from tkinter import*
@@ -61,7 +59,7 @@ def load_textures():
     texture.load('tank_left', '../img/tankT34_left.png')
     texture.load('tank_right', '../img/tankT34_right.png')
 
-    texture.load(world.BRICK  '../img/brick.png')
+    texture.load(world.BRICK,  '../img/brick.png')
     texture.load(world.WATER, '../img/water.png')
     texture.load(world.CONCRETE, '../img/wall.png')
 

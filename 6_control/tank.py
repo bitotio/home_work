@@ -1,20 +1,20 @@
-# позиционирование камеры на танке игрока
+
 
 from hitbox import Hitbox
 from tkinter import *
 from random import randint
-# 3 подключение библиотеки world
-import world
-from hitbox import Hitbox
-from tkinter import*
-from random import randint
-import texture as skin
 import world
 
+# 5 теперь изображения танков будут грузиться из модуля texture
+import texture as skin
+
+
+# 6 внесем изменния в инициализатор
 class Tank:
     __count = 0
 
-    def __init__(self, canvas, x, y,model = 'Т-14 Армата', ammo = 100, speed = 10,
+    def __init__(self, canvas, x, y,model = 'Т-14 Армата',
+                 ammo = 100, speed = 10,
                  # file_up = '../img/tankT34_up.png',
                  # file_down = '../img/tankT34_down.png',
                  # file_left = '../img/tankT34_left.png',
@@ -49,6 +49,8 @@ class Tank:
 
         self.__create()
         self.right()
+
+        print(self)
 
     def set_target(self, target):
         self.__target = target
@@ -88,25 +90,31 @@ class Tank:
             self.__ammo -= 1
             print('стреляю')
 
+
+# 7 Установить текстуры при смене напрвлений
     def forvard(self):
         self.__vx = 0
         self.__vy = -1
-        self.__canvas.itemconfig(self.__id, image = skin.get('tank_up'))
+        self.__canvas.itemconfig(self.__id,
+                                 image = skin.get('tank_up'))
 
     def backward(self):
         self.__vx = 0
         self.__vy = 1
-        self.__canvas.itemconfig(self.__id, image = skin.get('tank_down'))
+        self.__canvas.itemconfig(self.__id,
+                                 image = skin.get('tank_down'))
 
     def left(self):
         self.__vx = -1
         self.__vy = 0
-        self.__canvas.itemconfig(self.__id, image = skin.get('tank_left'))
+        self.__canvas.itemconfig(self.__id,
+                                 image = skin.get('tank_left'))
 
     def right(self):
         self.__vx = 1
         self.__vy = 0
-        self.__canvas.itemconfig(self.__id, image = skin.get('tank_right'))
+        self.__canvas.itemconfig(self.__id,
+                                 image = skin.get('tank_right'))
 
     def stop(self):
         self.__vx = 0
@@ -139,9 +147,10 @@ class Tank:
         self.__dx = 0
         self.__dy = 0
 
-
+# 8 Изменим код создания изображения на холсте
     def __create(self):
-        self.__id = self.__canvas.create_image(self.__x, self.__y, image = skin.get('tank_up'), anchor ='nw')
+        self.__id = self.__canvas.create_image(self.__x, self.__y,
+                                               image = skin.get('tank_up'), anchor ='nw')
 
     def __repaint(self):
         self.__canvas.moveto(self.__id,
@@ -187,9 +196,10 @@ class Tank:
     def grt_quantity():
         return Tank.__count
 
-
+# 9 Получить размеры изображения через skin
     def get_size(self):
-        return skin.get('tank.up').width()
+        # return self.__skin_up.width()
+        return skin.get('tank_up').width()
 
     def __chek_out_of_world(self):
         if self.__hitbox.left < 0 or \
@@ -200,13 +210,14 @@ class Tank:
             if self.__bot:
                 self.__AI_change_orientation()
 
+
     def __del__(self):
         print(f'удален танк')
         try:
             self.__canvas.delete(self.__id)
         except Exception:
             pass
-        
+
     def __str__(self):
         return (f'координаты: x = {self.__x}, y = {self.__y}, модель: {self.__model}, '
                 f'здоровье: {self.__hp}, опыт: {self.__xp}, боеприпасы: {self.__ammo}')

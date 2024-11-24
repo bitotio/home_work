@@ -1,11 +1,11 @@
-# Позиционирование камеры на танке игрока
+# Управление текстурами
 
 from tank import Tank
-
 from tkinter import*
-# 1 подключение библиотеки world
+
 import world
 import tanks_collection
+#2 подключение библиотеки texture
 import texture
 
 
@@ -19,17 +19,11 @@ KEY_D = 68
 
 FPS = 60
 def update():
-    # 1 будем переставлять камеру в новые координаты совпадфющие с координатами танка игрока
-    # world.set_camera_xy(player.get_x(), player.get_y())
+    tanks_collection.update()
     player = tanks_collection.get_player()
-    # 2 отцентруем камеру
     world.set_camera_xy(player.get_x()-world.SCREEN_WIDTH//2 + player.get_size()//2,
                         player.get_y()-world.SCREEN_HEIGHT//2 + player.get_size()//2)
-    tanks_collection.update()
-
-
     w.after(1000//FPS, update)
-
 
 
 
@@ -52,42 +46,37 @@ def key_press(event):
     elif event.keycode == KEY_RIGHT:
         world.move_camera(5, 0)
 
+        #2 спавн танков по пробелу
     elif event.keycode == 32:
         tanks_collection.spawn_enemy()
 
-def load_textures():
-    texture.load('tank_up','../img/tankT34_up.png')
-    texture.load('tank_down', '../img/tankT34_down.png')
-    texture.load('tank_left', '../img/tankT34_left.png')
-    texture.load('tank_right', '../img/tankT34_right.png')
-
-    texture.load(world.BRICK  '../img/brick.png')
-    texture.load(world.WATER, '../img/water.png')
-    texture.load(world.CONCRETE, '../img/wall.png')
+# 3 функция для загрузки всех изображений
+def load_textures():      # вызывать сразу после создания окна
+    # pass
+    texture.load('tank_up',
+                 '../img/tankT34_up.png')
+    texture.load('tank_down',
+                 '../img/tankT34_down.png')
+    texture.load('tank_left',
+                 '../img/tankT34_left.png')
+    texture.load('tank_right',
+                 '../img/tankT34_right.png')
 
 
 
 
 w = Tk()
+
+# 4  вызвать load_textures сразу после сщздания окна
 load_textures()
+
 w.title('Танки на минималках 2.0')
-canv = Canvas(w, width = world.WIDTH, height = world.HEIGHT, bg = 'alice blue')
+canv = Canvas(w, width=world.SCREEN_WIDTH, height=world.SCREEN_HEIGHT, bg = 'alice blue')
 canv.pack()
-world.initialaze(canv)
-
-player = Tank(canvas = canv, x = 100, y = 50, ammo = 100, speed=1, bot = False)
-enemy = Tank(canvas = canv, x = 300, y = 300, ammo = 100, speed=1, bot = True)
-neutral = Tank(canvas = canv, x = 300, y = 300, ammo = 100, speed=1, bot = False)
-neutral.stop()
-
-enemy.set_target(player)
-
-
-
-
-w.bind('<KeyPress>', key_press)
 
 tanks_collection.initialize(canv)
+
+w.bind('<KeyPress>', key_press)
 
 update()
 w.mainloop()
