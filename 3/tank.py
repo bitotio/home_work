@@ -10,7 +10,6 @@ class Tank:
         self.__skin_left = PhotoImage(file=file_left)
         self.__skin_right = PhotoImage(file=file_right)
 
-
         self.__hitbox = Hitbox(x, y, self.get_size(), self.get_size())
         self.__canvas = canvas
         Tank.__count += 1
