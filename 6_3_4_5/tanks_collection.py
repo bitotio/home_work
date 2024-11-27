@@ -53,12 +53,23 @@ def spawn_enemy():
 # 2 перепишем функцию spawn_enemy() так чтобы танк спавнился только если не пересекается с другим танком
 def spawn_enemy():
     while True:
-        pos_x = randint(200, 800)
-        pos_y = randint(200, 600)
+        pos_x = randint(200, world.WIDTH - 200)
+        pos_y = randint(200, world.HEIGHT - 200)
+
+        t = Tank(_canvas, x=pos_x, y=pos_y, speed=1)
+
+        t.set_target(get_player())
+        _tanks.append(t)
+
+def spawn_enemy():
+    while True:
+        pos_x = randint(200,800)
+        pos_y = randnit(200,600)
 
         t = Tank(_canvas, x=pos_x, y=pos_y, speed=1)
         if not check_collision(t):
             t.set_target(get_player())
-            _tanks.append(t)
+            _tancks.append(t)
             return True
+
 
